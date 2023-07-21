@@ -79,7 +79,6 @@ class InMemoryDeploymentManager(AgentDeploymentManager):
             await self.remove_deployment(id)
         except:
             print("Failed to remove deployment", id)
-            pass
         return await self.create_deployment(
             id,
             project_id,

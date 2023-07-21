@@ -94,18 +94,18 @@ class Playground(Session):
     ):
         dirs: List[EntryInfo] = [EntryInfo(name=path, isDir=True)]
         files: List[EntryInfo] = []
-        while len(dirs) > 0:
+        while dirs:
             dir = dirs.pop()
             entries = await self.list_dir(dir.name)
             dirs.extend(
                 EntryInfo(isDir=True, name=f"{dir.name}/{entry.name}")
                 for entry in entries
-                if entry.is_dir and not entry.name in ignore
+                if entry.is_dir and entry.name not in ignore
             )
             files.extend(
                 EntryInfo(isDir=False, name=f"{dir.name}/{entry.name}")
                 for entry in entries
-                if not entry.is_dir and not entry.name in ignore
+                if not entry.is_dir and entry.name not in ignore
             )
         return files
 
@@ -139,9 +139,9 @@ class Playground(Session):
                 envVars=self.env_vars,
                 rootdir=rootdir or self.rootdir,
             ),
-            wait=True if timeout is None else False,
+            wait=timeout is None,
             async_req=True,
-        )  # type: ignore
+        )
 
         response: ProcessResponse = await get_result(thread)
 

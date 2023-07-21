@@ -205,7 +205,7 @@ class ApiClient(object):
             query_params = self.sanitize_for_serialization(query_params)
             url_query = self.parameters_to_url_query(query_params,
                                                      collection_formats)
-            url += "?" + url_query
+            url += f"?{url_query}"
 
         try:
             # perform request and return response
@@ -278,16 +278,7 @@ class ApiClient(object):
         elif isinstance(obj, (datetime.datetime, datetime.date)):
             return obj.isoformat()
 
-        if isinstance(obj, dict):
-            obj_dict = obj
-        else:
-            # Convert model obj to dict except
-            # attributes `openapi_types`, `attribute_map`
-            # and attributes which value is not None.
-            # Convert attribute name to json key in
-            # model definition for request.
-            obj_dict = obj.to_dict()
-
+        obj_dict = obj if isinstance(obj, dict) else obj.to_dict()
         return {key: self.sanitize_for_serialization(val)
                 for key, val in obj_dict.items()}
 
@@ -326,12 +317,12 @@ class ApiClient(object):
 
         if type(klass) == str:
             if klass.startswith('List['):
-                sub_kls = re.match(r'List\[(.*)]', klass).group(1)
+                sub_kls = re.match(r'List\[(.*)]', klass)[1]
                 return [self.__deserialize(sub_data, sub_kls)
                         for sub_data in data]
 
             if klass.startswith('Dict['):
-                sub_kls = re.match(r'Dict\[([^,]*), (.*)]', klass).group(2)
+                sub_kls = re.match(r'Dict\[([^,]*), (.*)]', klass)[2]
                 return {k: self.__deserialize(v, sub_kls)
                         for k, v in data.items()}
 
@@ -565,8 +556,7 @@ class ApiClient(object):
                         filedata = f.read()
                         mimetype = (mimetypes.guess_type(filename)[0] or
                                     'application/octet-stream')
-                        params.append(
-                            tuple([k, tuple([filename, filedata, mimetype])]))
+                        params.append((k, (filename, filedata, mimetype)))
 
         return params
 
@@ -625,8 +615,7 @@ class ApiClient(object):
             return
 
         for auth in auth_settings:
-            auth_setting = self.configuration.auth_settings().get(auth)
-            if auth_setting:
+            if auth_setting := self.configuration.auth_settings().get(auth):
                 self._apply_auth_params(headers, queries,
                                         resource_path, method, body,
                                         auth_setting)
@@ -669,10 +658,10 @@ class ApiClient(object):
         os.close(fd)
         os.remove(path)
 
-        content_disposition = response.getheader("Content-Disposition")
-        if content_disposition:
-            filename = re.search(r'filename=[\'"]?([^\'"\s]+)[\'"]?',
-                                 content_disposition).group(1)
+        if content_disposition := response.getheader("Content-Disposition"):
+            filename = re.search(
+                r'filename=[\'"]?([^\'"\s]+)[\'"]?', content_disposition
+            )[1]
             path = os.path.join(os.path.dirname(path), filename)
 
         with open(path, "wb") as f:
