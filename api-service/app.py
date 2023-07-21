@@ -95,7 +95,6 @@ async def create_agent_deployment(
                 "update": True,
             },
         )
-        return {"id": deployment.id}
     else:
         id = str(uuid.uuid4())
         deployment = await deployment_manager.create_deployment(
@@ -119,7 +118,8 @@ async def create_agent_deployment(
                 "agent": "SmolDeveloper",
             },
         )
-        return {"id": deployment.id}
+
+    return {"id": deployment.id}
 
 
 @app.delete("/deployments/{id}", status_code=204)

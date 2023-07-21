@@ -116,6 +116,4 @@ class Database:
             .execute()
         )
         state = result.data[0]["data"]["state"]
-        if "envs" in state:
-            return state["envs"]
-        return []
+        return state["envs"] if "envs" in state else []

@@ -345,14 +345,14 @@ do not add any other explanation, only return a python list of strings.
                             "id": str(uuid.uuid4()),
                             "message": "Create a list of filepaths",
                         },
-                        "message": f"Called OpenAI",
+                        "message": "Called OpenAI",
                         "properties": {
                             **metadata,
                             "result": filepaths_string,
                             "model": self.model_name,
                         },
                         "type": "LLM",
-                    },
+                    }
                 )
 
                 span.add_event(
@@ -388,10 +388,7 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
                     user_prompt,
                 )
 
-                group = {
-                    "message": f"Create shared dependencies",
-                    "id": str(uuid.uuid4()),
-                }
+                group = {"message": "Create shared dependencies", "id": str(uuid.uuid4())}
 
                 await self.on_logs(
                     {
@@ -401,9 +398,9 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
                             "result": shared_dependencies,
                             "model": self.model_name,
                         },
-                        "message": f"Called OpenAI",
+                        "message": "Called OpenAI",
                         "type": "LLM",
-                    },
+                    }
                 )
                 span.add_event(
                     "model-used",
@@ -428,7 +425,7 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
                         {
                             "type": "Filesystem",
                             "group": group,
-                            "message": f"Saved file",
+                            "message": "Saved file",
                             "properties": {
                                 "path": filepath,
                                 "content": content,
@@ -451,21 +448,18 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
                         shared_dependencies=shared_dependencies,
                         prompt=user_prompt,
                     )
-                    group = {
-                        "message": f"Create file",
-                        "id": str(uuid.uuid4()),
-                    }
+                    group = {"message": "Create file", "id": str(uuid.uuid4())}
                     await self.on_logs(
                         {
                             "group": group,
-                            "message": f"Called OpenAI",
+                            "message": "Called OpenAI",
                             "properties": {
                                 **metadata,
                                 "result": content,
                                 "model": model_name,
                             },
                             "type": "LLM",
-                        },
+                        }
                     )
                     await save_file(filename, content, group)
 
@@ -506,7 +500,7 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
                 )
                 await self.on_logs(
                     {
-                        "message": f"Pushed repository",
+                        "message": "Pushed repository",
                         "properties": {
                             "repository": f"{owner}/{repo}",
                         },
@@ -524,24 +518,19 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
                         },
                     )
                 )
-                await self.on_logs(
-                    {
-                        "message": f"Run finished",
-                        "type": "Run",
-                    }
-                )
+                await self.on_logs({"message": "Run finished", "type": "Run"})
             except Exception as e:
                 for t in tasks:
                     t.cancel()
-                print(f"Failed agent run", e)
+                print("Failed agent run", e)
                 await self.on_logs(
                     {
-                        "message": f"Run failed",
+                        "message": "Run failed",
                         "properties": {
                             "error": str(e),
                         },
                         "type": "Run",
-                    },
+                    }
                 )
                 span.set_status(Status(StatusCode.ERROR))
                 span.record_exception(e)
@@ -597,12 +586,7 @@ Exclusively focus on the names of the shared dependencies, and do not add any ot
 
     async def stop(self):
         print("Cancel agent run")
-        await self.on_logs(
-            {
-                "message": f"Run cancelled",
-                "type": "Run",
-            },
-        )
+        await self.on_logs({"message": "Run cancelled", "type": "Run"})
         await self.on_interaction_request(
             AgentInteractionRequest(
                 interaction_id=str(uuid.uuid4()),
